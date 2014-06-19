@@ -56,17 +56,19 @@ var OculusComponent3D = (function () {
     }
 
     oculusComponent.prototype.moveTo = function(params) {
+        this.moveOculusCameras(params, newCameras.leftCamera);
+        this.moveOculusCameras(params, newCameras.rightCamera);
+    }
+
+    oculusComponent.prototype.moveOculusCameras = function(params, camera) {
         var begin = params.begin;
         var end = params.end;
-        this.computeAnimation(newCameras.leftCamera, { position : begin } , {position : end}, {
+        var speed = 330;
+        var duration = begin.distanceTo(end) / speed * 1000;
+        console.log('Computed duration: ' + duration)
+        this.computeAnimation(camera, { position : begin } , {position : end}, {
             smooth: "linear",
-            duration : 330,
-            isACamera: true,
-            callback : params.callback
-        });
-        this.computeAnimation(newCameras.rightCamera, { position : begin } , {position : end}, {
-            smooth: "linear",
-            duration : 330,
+            duration : duration,
             isACamera: true,
             callback : params.callback
         });
