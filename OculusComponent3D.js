@@ -43,15 +43,10 @@ var OculusComponent3D = (function () {
     }
 
     oculusComponent.prototype.onOculus3D = function () {
+        var originScene = API.getScene();
+        var originCamera = originScene.activeCamera;
+        BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(originScene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
         this.camera = API.getCamera();
-        var positions = [];
-        var pos;
-
-        for (var i = 0; i < 10; i++) {
-            pos = this.camera.position.clone();
-            positions.push(pos);
-            pos.x += 30*i;
-        }
 
         this.moveBaby(wanaplan.structure.params.pathOculus);
 
