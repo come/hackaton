@@ -26,7 +26,7 @@ var OculusComponent2D = (function () {
         var item = {
           title : _("Oculus"),
           icon : this.localPath + "images/oculus.png",
-          action : "my.request.oculus",
+          action : "onOculusClick",
           index: 1000
         }
 
@@ -36,11 +36,11 @@ var OculusComponent2D = (function () {
     }
 
     oculusComponent.prototype.startListening = function () {
-        document.addEventListener("my.request.oculus", this.onOculus, false);
+        document.addEventListener("onOculusClick", this.onOculus, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("my.request.oculus", this.onOculus, false);
+        document.removeEventListener("onOculusClick", this.onOculus, false);
     }
 
     oculusComponent.prototype.onOculus = function () {
