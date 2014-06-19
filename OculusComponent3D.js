@@ -60,15 +60,18 @@ var OculusComponent3D = (function () {
         anims = [];
         var begin = params.begin;
         var end = params.end;
+        var speed = 330;
+        var duration = begin.distanceTo(end) / speed * 1000;
+
         this.computeAnimation(newCameras.leftCamera, { position : begin } , {position : end}, {
             smooth: "linear",
-            duration : 330,
+            duration : duration,
             isACamera: true,
             callback : params.callback
         });
         this.computeAnimation(newCameras.rightCamera, { position : begin } , {position : end}, {
             smooth: "linear",
-            duration : 330,
+            duration : duration,
             isACamera: true,
             callback : params.callback
         });
