@@ -21,6 +21,7 @@ var OculusComponent3D = (function () {
     };
 
     var newCameras;
+    var anims = [];
 
     oculusComponent.prototype = new BaseComponent3D();
 
@@ -56,6 +57,7 @@ var OculusComponent3D = (function () {
     }
 
     oculusComponent.prototype.moveTo = function(params) {
+        anims = [];
         var begin = params.begin;
         var end = params.end;
         this.computeAnimation(newCameras.leftCamera, { position : begin } , {position : end}, {
@@ -70,6 +72,7 @@ var OculusComponent3D = (function () {
             isACamera: true,
             callback : params.callback
         });
+        this.launchAnimation();
     }
 
     oculusComponent.prototype.moveBaby = function(positions, index) {
@@ -137,25 +140,42 @@ var OculusComponent3D = (function () {
         return pAtt( tForx( x , Ax,Ay ,  Bx,By ) ,  Ax,Ay ,  Bx,By  ).y
     };
 
-    var launchAnimation = function(target, src, dst, duration, property, callback) {
+    var Animation = function(target, src, dst, duration, property, callback) {
+        this.target = target;
+        this.src = src;
+        this.dst = dst;
+        this.duration = duration;
+        this.property = property;
+        this.callback = callback;
+        return this;
+    }
+
+    oculusComponent.prototype.launchAnimation = function() {
         var t = 0;
         var frameDuration = 16; // 60FPS
-        var interval = setInterval(function() {
+        var interval;
+        var animationStep = function() {
             t += frameDuration;
 
-            if (t <= duration) {
-                target[property] = src[property] + (dst[property] - src[property]) * t / duration;
-                if (property == 'z') {
-                    newCameras.leftCamera.resetViewMatrix();
-                    newCameras.rightCamera.resetViewMatrix();
-                }
-            } 
-            else {
-                target[property] = dst[property];
-                clearInterval(interval);
-                if (callback) callback()
-            }  
-        }, frameDuration);
+            for (var i = 0; i < anims.length; i++) {
+                if (t <= anims[i].duration) {
+                    anims[i].target[anims[i].property] = anims[i].src[anims[i].property] + (anims[i].dst[anims[i].property] - anims[i].src[anims[i].property]) * t / anims[i].duration;
+                    if (anims[i].property == 'z') {
+                        newCameras.leftCamera.resetViewMatrix();
+                        newCameras.rightCamera.resetViewMatrix();
+                    }
+                } 
+                else {
+                    anims[i].target[anims[i].property] = anims[i].dst[anims[i].property];
+                    if (anims[i].callback) {
+                        clearInterval(interval);
+                        anims[i].callback()
+                    }
+                }  
+            }
+        }
+
+        interval = setInterval(animationStep, frameDuration);
     }
 
     oculusComponent.prototype.computeAnimation = function( target , src , dst , options ) {
@@ -168,12 +188,15 @@ var OculusComponent3D = (function () {
 
         for( var property in src ){
             if (src[property] instanceof BABYLON.Vector3) {
-                launchAnimation(target[property], src[property], dst[property], duration, "x");
-                launchAnimation(target[property], src[property], dst[property], duration, "y");
-                launchAnimation(target[property], src[property], dst[property], duration, "z", callback);
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "x"));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "y"));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "z", target == newCameras.rightCamera ? callback : null));
+                // launchAnimation(target[property], src[property], dst[property], duration, "x");
+                // launchAnimation(target[property], src[property], dst[property], duration, "y");
+                // launchAnimation(target[property], src[property], dst[property], duration, "z", callback);
             }
             else {
-                launchAnimation(target, src[property], dst[property], duration, property, callback);
+                this.launchAnimation(target, src[property], dst[property], duration, property, callback);
             }
         }
 
