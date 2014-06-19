@@ -39,13 +39,39 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype.startListening = function () {
         this.onOculus3D = this.onOculus3D.bind(this);
         document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
+        //document.addEventListener("keydown", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
         document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
     }
 
+/*    oculusComponent.prototype.moveForward = function () {
+              if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
+                that.keysDown.indexOf(evt.keyCode) !== -1 ||
+                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                that.keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = that._keys.indexOf(evt.keyCode);
+
+                if (index === -1) {
+                  that._keys.push(evt.keyCode);
+                }
+              }
+              console.log("test");
+    });*/
+
     oculusComponent.prototype.onOculus3D = function () {
+        var body = document.body;
+
+        for (var i = 0; i < body.children.length; i ++) {
+            if (body.children[i].id != "container3d") {
+                body.children[i].style.visibility = "hidden";
+            }
+        }
+
+        document.getElementById("container3d").children[0].style.width = window.innerWidth+"px";
+
+        wanaplan.setSize(window.innerWidth, window.innerHeight);
         var originScene = API.getScene();
         var originCamera = originScene.activeCamera;
         newCameras = BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(originScene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
