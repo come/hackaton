@@ -45,8 +45,11 @@ var OculusComponent3D = (function () {
         var camera = API.getCamera();
         camera.moveLocal(new BABYLON.Vector3(0, 20, 0));
         camera.rotateLocal(new BABYLON.Vector3(0, Math.PI / 12, 0));
+    }
 
-        console.log("done");
+    oculusComponent.prototype.moveTo = function(params) {
+        var begin = params.begin;
+        var end = params.end;
     }
 
     return oculusComponent;
