@@ -18,6 +18,7 @@ var OculusComponent2D = (function () {
         this.path = [];
         this.pathMiddle = [];
         this.planPos = {};
+        this.pathColor = "green";
         return this;
     };
 
@@ -32,7 +33,7 @@ var OculusComponent2D = (function () {
             icon: this.localPath + "images/oculus.png",
             action: "oculusComponent2D.click",
             index: 1000
-        }
+        };
 
         API.Menu.add(API.Menu.MENU_TOP_2, item);
 
@@ -65,14 +66,24 @@ var OculusComponent2D = (function () {
     oculusComponent.prototype.onOculusHoverPoint = function (ctx, translation, zoom, data) {
 
         if (data) {
+            this.pathColor = "grey";
             ctx.save();
             ctx.translate(translation.x, translation.y);
             ctx.scale(zoom, zoom);
+
             ctx.beginPath();
-            ctx.lineWidth = "2";
-            ctx.strokeStyle = "gray";
+            ctx.lineWidth = "10";
+            ctx.strokeStyle = "green";
+            ctx.fillStyle = "white";
             ctx.arc(data.x, data.z, 25 * zoom, 0, Math.PI * 2);
             ctx.stroke();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(data.x, data.z, 10 * zoom, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fill();
+
             ctx.restore();
         }
 
@@ -85,6 +96,7 @@ var OculusComponent2D = (function () {
     };
 
     oculusComponent.prototype.onOculusEditDragEnd = function (event, target, mstate, params) {
+        this.pathColor = "green";
         api2D.requestRefresh();
     };
 
@@ -177,7 +189,7 @@ var OculusComponent2D = (function () {
             ctx.translate(translation.x, translation.y);
             ctx.scale(zoom, zoom);
 
-            ctx.strokeStyle = "green";
+            ctx.strokeStyle = this.pathColor;
             ctx.lineWidth = "20";
             ctx.beginPath();
 
