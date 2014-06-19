@@ -20,6 +20,8 @@ var OculusComponent3D = (function () {
         return this;
     };
 
+    var newCameras;
+
     oculusComponent.prototype = new BaseComponent3D();
 
     oculusComponent.prototype.initialize = function () {
@@ -45,7 +47,7 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype.onOculus3D = function () {
         var originScene = API.getScene();
         var originCamera = originScene.activeCamera;
-        BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(originScene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
+        newCameras = BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(originScene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
         this.camera = API.getCamera();
 
         this.moveBaby(wanaplan.structure.params.pathOculus);
@@ -56,7 +58,13 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype.moveTo = function(params) {
         var begin = params.begin;
         var end = params.end;
-        this.computeAnimation(this.camera, { position : begin } , {position : end}, {
+        this.computeAnimation(newCameras.leftCamera, { position : begin } , {position : end}, {
+            smooth: "linear",
+            duration : 110,
+            isACamera: true,
+            callback : params.callback
+        });
+        this.computeAnimation(newCameras.rightCamera, { position : begin } , {position : end}, {
             smooth: "linear",
             duration : 110,
             isACamera: true,
@@ -65,8 +73,6 @@ var OculusComponent3D = (function () {
     }
 
     oculusComponent.prototype.moveBaby = function(positions, index) {
-        console.log(index);
-        this.camera.animations = [];
         var index = index !== undefined ? index : 0;
         if (index >= (wanaplan.structure.params.pathOculus.length - 1)) return;
 
@@ -139,6 +145,10 @@ var OculusComponent3D = (function () {
 
             if (t <= duration) {
                 target[property] = src[property] + (dst[property] - src[property]) * t / duration;
+                if (property == 'z') {
+                    newCameras.leftCamera.resetViewMatrix();
+                    newCameras.rightCamera.resetViewMatrix();
+                }
             } 
             else {
                 target[property] = dst[property];
