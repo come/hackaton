@@ -67,6 +67,97 @@ var OculusComponent3D = (function () {
         }
     };
 
+    var smoothFns = {
+        linear : function(x){
+            return x;
+        },
+        ease : function(x){
+            return cubicBezier( x ,  0.5,0  ,  0.5,1 );
+        },
+        easeOut : function(x){
+            return cubicBezier( x ,  0.64,0.47  ,  0.34,1 );
+        },
+    };
+
+
+    var AnimationCancelor = function( animations , target ){ 
+        this.animations=animations
+        this.target=target;
+
+        if( this.target._animationCancelor )
+            this.target._animationCancelor.cancel();
+
+        this.target._animationCancelor = this;
+    }
+    AnimationCancelor.prototype.cancel = function(){
+        
+        if( this.target._animationCancelor != this )
+            return;
+
+        this.target.getScene().stopAnimation( this.target );
+
+        this._onAnimationEnd();
+    }
+    AnimationCancelor.prototype._onAnimationEnd = function(){
+
+        if( this.target._animationCancelor != this )
+            return;
+
+        this.target._animationCancelor = null;
+
+        if( this._moreCleanUp )
+            this._moreCleanUp();
+
+        if( this._callBack )
+            this._callBack();
+
+        if( !this.animations )
+            return;
+
+        for(var i=this.animations.length;i--;)
+            for(var k=this.target.animations.length;k--;)
+                if( this.animations[i] == this.target.animations[k] )
+                    this.target.animations.splice(k,1);
+
+        this.animations = null;
+    }
+
+    /*
+     * return the point on the cubic bezier at the t param
+     */
+    var pAtt = function( t , Ax,Ay ,  Bx,By   , resultat){
+        
+        resultat = resultat || {x:null,y:null}
+
+        var t_ = 1-t;
+
+        resultat.x = 3*t*t_*t_*Ax + 3*t*t*t_*Bx + t*t*t
+        resultat.y = 3*t*t_*t_*Ay + 3*t*t*t_*By + t*t*t
+        
+        return resultat
+    };
+    /*
+     * return param t for which the point on the cubic bezier x coordinate worth x
+     */
+    var tForx = function( x   , Ax,Ay , Bx,By ){
+
+        var a=0,b=1,e,tmp={x:null,y:null};
+
+        while( b-a > 0.001 )
+            if(  pAtt( (e=(a+b)/2) , Ax,Ay , Bx,By , tmp  ).x > x )
+                b=e;
+            else
+                a=e;
+        
+        return (a+b)/2;
+    };
+    /*
+     * return the y coordinate of the point on the cubic bezier where x worth x
+     */
+    var cubicBezier = function( x , Ax,Ay ,  Bx,By ){
+        return pAtt( tForx( x , Ax,Ay ,  Bx,By ) ,  Ax,Ay ,  Bx,By  ).y
+    };
+    
     oculusComponent.prototype.computeAnimation = function( target , src , dst , options ) {
         options = options || {};
 
