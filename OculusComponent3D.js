@@ -53,7 +53,7 @@ var OculusComponent3D = (function () {
             pos.x += 30*i;
         }
 
-        this.moveBaby(positions);
+        this.moveBaby(wanaplan.structure.params.pathOculus);
 
         console.log("done");
     }
@@ -63,7 +63,7 @@ var OculusComponent3D = (function () {
         var end = params.end;
         this.computeAnimation(this.camera, { position : begin } , {position : end}, {
             smooth: "linear",
-            duration : 1100,
+            duration : 110,
             isACamera: true,
             callback : params.callback
         });
@@ -73,11 +73,16 @@ var OculusComponent3D = (function () {
         console.log(index);
         this.camera.animations = [];
         var index = index !== undefined ? index : 0;
-        if (index >= 10) return;
+        if (index >= (wanaplan.structure.params.pathOculus.length - 1)) return;
+
+        var begin = positions[index].clone();
+        var end = positions[index+1].clone();
+        begin.z = -begin.z;
+        end.z = -end.z;
 
         this.moveTo({
-            begin: positions[index],
-            end: positions[index+1],
+            begin: begin,
+            end: end,
             callback : oculusComponent.prototype.moveBaby.bind(this, positions, index+1)
         });
     };
