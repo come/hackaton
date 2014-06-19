@@ -22,30 +22,31 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype = new BaseComponent3D();
 
     oculusComponent.prototype.initialize = function () {
-         
-        // var item = {
-        //   title : _("Oculus"),
-        //   icon : this.localPath + "images/oculus.png",
-        //   action : "my.request.oculus",
-        //   index: 1000
-        // }
+       var item = {
+         title : _("Oculus 3D"),
+         icon : this.localPath + "images/oculus.png",
+         action : "my.request.oculus3D",
+         index: 1001
+       }
 
-        // API.Menu.add(API.Menu.MENU_TOP_2, item);
-        console.log("coucou");
-        debugger;
-        this.startListening();
+       API.Menu.add(API.Menu.MENU_TOP_2, item);
+       this.startListening();
     }
 
     oculusComponent.prototype.startListening = function () {
-        //document.addEventListener("my.request.oculus", this.onOculus, false);
+        document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("my.request.oculus", this.onOculus, false);
+        document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
     }
 
-    oculusComponent.prototype.onOculus = function () {
-        
+    oculusComponent.prototype.onOculus3D = function () {
+        var camera = API.getCamera();
+        camera.moveLocal(new BABYLON.Vector3(0, 20, 0));
+        camera.rotateLocal(new BABYLON.Vector3(0, Math.PI / 12, 0));
+
+        console.log("done");
     }
 
     return oculusComponent;
