@@ -15,6 +15,7 @@ var OculusComponent3D = (function () {
     var oculusComponent = function(core) {
         BaseComponent3D.call(this, core, "OculusComponent3D");
         this.localPath = "http://localhost/hackaton/";
+        this.camera = null;
 
         return this;
     };
@@ -34,19 +35,36 @@ var OculusComponent3D = (function () {
     }
 
     oculusComponent.prototype.startListening = function () {
-        document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.addEventListener("my.request.oculus3D", this.onOculus3D.bind(this), false);
     }
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.removeEventListener("my.request.oculus3D", this.onOculus3D.unbind(this), false);
     }
 
     oculusComponent.prototype.onOculus3D = function () {
-        var camera = API.getCamera();
-        camera.moveLocal(new BABYLON.Vector3(0, 20, 0));
-        camera.rotateLocal(new BABYLON.Vector3(0, Math.PI / 12, 0));
+        this.camera = API.getCamera();
+        this.moveBaby([
+            new BABYLON.Vector3(0,0,0),
+            new BABYLON.Vector3(0,0,-60)
+        ]);
 
         console.log("done");
+    }
+
+    oculusComponent.prototype.moveTo = function(params) {
+        var begin = params.begin;
+        var end = params.end;
+        API.computeAnimation(this.camera, begin, end, {smooth: "linear"});
+    }
+
+    oculusComponent.prototype.moveBaby = function(positions) {
+        for(var i=0; i<positions.length-1; i++) {
+            this.moveTo({
+                begin: positions[i],
+                end: positions[i+1]
+            });
+        }
     }
 
     return oculusComponent;
