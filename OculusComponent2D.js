@@ -36,8 +36,6 @@ var OculusComponent2D = (function () {
 
         API.Menu.add(API.Menu.MENU_TOP_2, item);
 
-        console.log('init')
-
         document.addEventListener("wnp.core.structure.loaded", this.onPlanReady.bind(this), false);
 
         this.startListening();
@@ -47,18 +45,60 @@ var OculusComponent2D = (function () {
         this.onOculusClick = this.onOculusClick.bind(this);
         document.addEventListener("oculusComponent2D.click", this.onOculusClick, false);
         api2D.registerEventCb("oculusComponent2D.dynamicRefresh", this.priority, "refresh", null, null, this.onOculusRefresh.bind(this), {});
-        //api2D.registerEventCb("oculusComponent2D.hover", this.priority, "hover", api2D.MODE_NORMAL, null, this.onOculusHover.bind(this), {});
+        api2D.registerEventCb("oculusComponent2D.hover", this.priority, "hover", api2D.MODE_NORMAL, null, this.onOculusHover.bind(this), {});
     };
 
     oculusComponent.prototype.stopListening = function () {
         document.removeEventListener("oculusComponent2D.click", this.onOculusClick, false);
     };
 
-    oculusComponent.prototype.onOculusHover = function () {
-        console.log('hover');
+    oculusComponent.prototype.onOculusHover = function (event, target, mstate, params) {
+        api2D.registerEventCb("oculusComponent2D.edit.mouseMove", this.priority, "mouse-move", api2D.MODE_NORMAL, BABYLON.Vector3, this.onOculusEditMouseMove.bind(this), target);
+        api2D.registerEventCb("oculusComponent2D.edit.hover", this.priority, "dynamic-refresh", api2D.MODE_NORMAL, BABYLON.Vector3, this.onOculusHoverPoint.bind(this), target);
+        api2D.registerEventCb("oculusComponent2D.edit.dragStart", this.priority, "drag-start", api2D.MODE_NORMAL, BABYLON.Vector3, this.onOculusEditDragStart.bind(this), {});
     };
 
-/*    oculusComponent.prototype.getTargeted = function (vector) {
+    oculusComponent.prototype.onOculusEditMouseMove = function () {
+        api2D.requestDynamicRefresh();
+    };
+
+    oculusComponent.prototype.onOculusHoverPoint = function (ctx, translation, zoom, data) {
+
+        if (data) {
+            ctx.save();
+            ctx.translate(translation.x, translation.y);
+            ctx.scale(zoom, zoom);
+            ctx.beginPath();
+            ctx.lineWidth = "2";
+            ctx.strokeStyle = "gray";
+            ctx.arc(data.x, data.z, 25 * zoom, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+    };
+
+    oculusComponent.prototype.onOculusEditDragStart = function (event, target, mstate, params) {
+        api2D.registerEventCb("oculusComponent2D.edit.dragging", this.priority, "dragging", null, null, this.onOculusEditDragging.bind(this), target);
+        api2D.registerEventCb("oculusComponent2D.edit.dragEnd", this.priority, "drag-end", null, null, this.onOculusEditDragEnd.bind(this), target);
+        return false;
+    };
+
+    oculusComponent.prototype.onOculusEditDragEnd = function (event, target, mstate, params) {
+        api2D.requestRefresh();
+    };
+
+    oculusComponent.prototype.onOculusEditDragging = function (event, target, mstate, params) {
+        params.x += mstate.posDelta.x;
+        params.z += mstate.posDelta.y;
+
+        this.computeMiddlePath();
+
+        api2D.requestRefresh();
+
+    };
+
+    oculusComponent.prototype.getTargeted = function (vector) {
         if (api2D.getMode() === api2D.MODE_NORMAL) {
             for (var i = 0; i < this.path.length; i++) {
                 var myVector = {
@@ -68,14 +108,13 @@ var OculusComponent2D = (function () {
                 };
 
                 var distance = BABYLON.Vector3.DistanceSquared(myVector, this.path[i]);
-                if (distance <= 400) {
-                    console.log('target', this.path[i]);
+                if (distance <= 1000) {
                     return this.path[i];
                 }
             }
         }
-        return null;
-    };*/
+        return false;
+    };
 
     oculusComponent.prototype.onOculusClick = function () {
         if (api2D.getMode() === api2D.MODE_DRAW) {
@@ -87,7 +126,6 @@ var OculusComponent2D = (function () {
     };
 
     oculusComponent.prototype.onPlanReady = function () {
-        console.log('ready')
         this.path = this.structure.params.pathOculus || [];
         this.computeMiddlePath();
         api2D.requestRefresh();
@@ -101,11 +139,9 @@ var OculusComponent2D = (function () {
         return false;
     };
 
-
     oculusComponent.prototype.onOculusDragEnd = function () {
         this.structure.params.pathOculus = this.path;
     };
-
 
     oculusComponent.prototype.computeMiddlePath = function () {
         if (this.path.length > 0) {
@@ -158,6 +194,7 @@ var OculusComponent2D = (function () {
             ctx.lineTo(this.planPos.x, this.planPos.y);
 
             ctx.stroke();
+
             ctx.restore();
         }
     };
