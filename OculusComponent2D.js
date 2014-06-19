@@ -37,7 +37,7 @@ var OculusComponent2D = (function () {
         API.Menu.add(API.Menu.MENU_TOP_2, item);
 
         document.addEventListener("wnp.core.structure.loaded", this.onPlanReady.bind(this), false);
-
+        this.onPlanReady();
         this.startListening();
     };
 
