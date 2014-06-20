@@ -26,23 +26,18 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype = new BaseComponent3D();
 
     oculusComponent.prototype.initialize = function () {
-       var item = {
-         title : _("Oculus 3D"),
-         icon : this.localPath + "images/oculus.png",
-         action : "my.request.oculus3D",
-         index: 1001
-       }
-
-       API.Menu.add(API.Menu.MENU_TOP_2, item);
+      
     }
 
     oculusComponent.prototype.startListening = function () {
         this.onOculus3D = this.onOculus3D.bind(this);
         document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.addEventListener("my.request.oculus", this.onOculus3D, false);
+        //document.addEventListener("keydown", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.removeEventListener("my.request.oculus", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.moveForward = function (evt) {
@@ -91,25 +86,53 @@ var OculusComponent3D = (function () {
         document.addEventListener("keydown", this.moveForward, false);
         this.camera = API.getCamera();
 
-        this.moveBaby(wanaplan.structure.params.pathOculus);
+        var params = wanaplan.structure.params.pathOculus;
 
-        console.log("done");
+        var pyr = {
+            pitch : 0,
+            yaw : Math.atan2(params[0].z - params[1].z, params[0].x - params[1].x) - Math.PI / 2,
+            roll : 0
+        };
+        newCameras.leftCamera._currentOrientation = pyr
+        newCameras.rightCamera._currentOrientation = pyr;
+
+        this.moveBaby(params);
     }
 
     oculusComponent.prototype.moveTo = function(params) {
         anims = [];
         var begin = params.begin;
         var end = params.end;
-        var speed = 330;
+        var speed = 100;
         var duration = begin.distanceTo(end) / speed * 1000;
 
-        this.computeAnimation(newCameras.leftCamera, { position : begin } , {position : end}, {
+        var beginRotation = newCameras.leftCamera._currentOrientation;
+        var pyr = {
+            pitch : 0,
+            yaw :  (3 * Math.PI / 2 - Math.atan2(begin.z - end.z, begin.x - end.x)) % (2 * Math.PI),
+            roll : 0
+        };
+        if(pyr.yaw > Math.PI) {
+            pyr.yaw = pyr.yaw - 2 * Math.PI;
+        }
+        if(pyr.yaw < -Math.PI) {
+            pyr.yaw = pyr.yaw + 2 * Math.PI;
+        }
+        console.log(pyr.yaw);
+
+        var endRotation = { 
+            yaw : pyr.yaw,
+            pitch : pyr.pitch,
+            roll : pyr.roll
+        };
+
+        this.computeAnimation(newCameras.leftCamera, { position : begin, _currentOrientation : beginRotation  } , { position : end, _currentOrientation : endRotation }, {
             smooth: "linear",
             duration : duration,
             isACamera: true,
             callback : params.callback
         });
-        this.computeAnimation(newCameras.rightCamera, { position : begin } , {position : end}, {
+        this.computeAnimation(newCameras.rightCamera, { position : begin, _currentOrientation : beginRotation  } , { position : end, _currentOrientation : endRotation }, {
             smooth: "linear",
             duration : duration,
             isACamera: true,
@@ -249,10 +272,14 @@ var OculusComponent3D = (function () {
             if (src[property] instanceof BABYLON.Vector3) {
                 anims.push(new Animation(target[property], src[property], dst[property], duration, "x"));
                 anims.push(new Animation(target[property], src[property], dst[property], duration, "y"));
-                anims.push(new Animation(target[property], src[property], dst[property], duration, "z", target == newCameras.rightCamera ? callback : null));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "z"));
                 // launchAnimation(target[property], src[property], dst[property], duration, "x");
                 // launchAnimation(target[property], src[property], dst[property], duration, "y");
                 // launchAnimation(target[property], src[property], dst[property], duration, "z", callback);
+            } else if (src[property].yaw) {
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "yaw"));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "pitch"));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "roll", target == newCameras.rightCamera ? callback : null));
             }
             else {
                 this.launchAnimation(target, src[property], dst[property], duration, property, callback);
@@ -271,6 +298,71 @@ var OculusComponent3D = (function () {
         // }
 
         return;
+    }
+
+    oculusComponent.prototype.setFromEuler = function (euler, update) {
+
+        // http://www.mathworks.com/matlabcentral/fileexchange/
+        //  20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
+        //  content/SpinCalc.m
+
+        var c1 = Math.cos( euler._x / 2 );
+        var c2 = Math.cos( euler._y / 2 );
+        var c3 = Math.cos( euler._z / 2 );
+        var s1 = Math.sin( euler._x / 2 );
+        var s2 = Math.sin( euler._y / 2 );
+        var s3 = Math.sin( euler._z / 2 );
+
+        var quaternion = { _w : 0, _x : 0, _y : 0, _z : 0 };
+
+        if ( !euler.order || euler.order === 'XYZ' ) {
+
+            quaternion._x = s1 * c2 * c3 + c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 - s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 + s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+        } else if ( euler.order === 'YXZ' ) {
+
+            quaternion._x = s1 * c2 * c3 + c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 - s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 - s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+        } else if ( euler.order === 'ZXY' ) {
+
+            quaternion._x = s1 * c2 * c3 - c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 + s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 + s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+        } else if ( euler.order === 'ZYX' ) {
+
+            quaternion._x = s1 * c2 * c3 - c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 + s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 - s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+        } else if ( euler.order === 'YZX' ) {
+
+            quaternion._x = s1 * c2 * c3 + c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 + s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 - s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+        } else if ( euler.order === 'XZY' ) {
+
+            quaternion._x = s1 * c2 * c3 - c1 * s2 * s3;
+            quaternion._y = c1 * s2 * c3 - s1 * c2 * s3;
+            quaternion._z = c1 * c2 * s3 + s1 * s2 * c3;
+            quaternion._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+        }
+
+
+
+        return quaternion;
+
     }
 
     return oculusComponent;

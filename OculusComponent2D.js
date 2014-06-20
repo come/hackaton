@@ -31,7 +31,7 @@ var OculusComponent2D = (function () {
         var item = {
             title: _("Oculus"),
             icon: this.localPath + "images/oculus.png",
-            action: "oculusComponent2D.click",
+            action: "my.request.oculus",
             index: 1000
         };
 
@@ -44,13 +44,13 @@ var OculusComponent2D = (function () {
 
     oculusComponent.prototype.startListening = function () {
         this.onOculusClick = this.onOculusClick.bind(this);
-        document.addEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.addEventListener("my.request.oculus", this.onOculusClick, false);
         api2D.registerEventCb("oculusComponent2D.dynamicRefresh", this.priority, "refresh", null, null, this.onOculusRefresh.bind(this), {});
         api2D.registerEventCb("oculusComponent2D.hover", this.priority, "hover", api2D.MODE_NORMAL, null, this.onOculusHover.bind(this), {});
     };
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.removeEventListener("my.request.oculus", this.onOculusClick, false);
     };
 
     oculusComponent.prototype.onOculusHover = function (event, target, mstate, params) {
@@ -209,8 +209,7 @@ var OculusComponent2D = (function () {
 
         var vector = new BABYLON.Vector3(mstate.planPos.x, 175, mstate.planPos.y);
 
-        //find overtures
-        if (this.path.length === 0 || (this.path.length > 0 && BABYLON.Vector3.Distance(this.path[this.path.length - 1], vector) >= 50)) {
+        if (this.path.length === 0 || (this.path.length > 0 && BABYLON.Vector3.Distance(this.path[this.path.length - 1], vector) >= 100)) {
             this.path.push(vector);
             if (this.path && this.path.length >= 2) {
                 this.pathMiddle.push(BABYLON.Vector3.Lerp(this.path[this.path.length - 2], vector, 0.5));
