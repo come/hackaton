@@ -13,7 +13,14 @@
         "connect-livereload": "~0.3.2",
         "grunt-contrib-watch": "~0.5.3",
         "grunt-open": "~0.2.3",
-        "matchdep": "~0.3.0"
+        "matchdep": "~0.3.0",
+        "grunt-istanbul-coverage": "~0.0.1",
+        "grunt-karma": "0.7.1",
+        "karma": "~0.10.9",
+        "karma-coverage": "0.1.4",
+        "karma-junit-reporter": "~0.2.1",
+        "karma-jasmine": "~0.1",
+        "karma-chrome-launcher": "~0.1"
     },
     "engines": {
         "node": ">=0.8.0"

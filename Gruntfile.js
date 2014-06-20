@@ -13,20 +13,17 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
-            files: ['Gruntfile.js', '*.js'],
             options: {
-                // options here to override JSHint defaults
-                globals: {
-                    jQuery: true,
-                    console: true,
-                    module: true,
-                    document: true
-                }
-            }
+                jshintrc: '.jshintrc',
+                ignores: []
+            },
+            all: [
+                'Gruntfile.js',
+                'test/**/*.js',
+                '*.js'
+            ]
         },
         watch: {
-            files: ['<%= jshint.files %>'],
-            tasks: ['jshint'],
             options: {
                 livereload: LIVERELOAD_PORT
             }
@@ -51,9 +48,29 @@ module.exports = function (grunt) {
             dev: {
                 path: 'http://localhost:80/hackaton/index.html'
             }
+        },
+        karma: {
+            unit: {
+                configFile: 'karma.conf.js',
+                singleRun: true,
+                autoWatch: false,
+                reporters: ['dots', 'junit', 'coverage']
+            }
+        },
+        coverage: {
+            options: {
+                thresholds: {
+                    'statements': 100,
+                    'branches': 100,
+                    'functions': 100,
+                    'lines': 100
+                },
+                dir: 'coverage'
+            }
         }
     });
 
-    grunt.registerTask('default', ['connect:static', 'open:dev', 'watch']);
+    grunt.registerTask('default', ['jshint', 'karma:unit', 'coverage']);
+    grunt.registerTask('server', ['connect:static', 'open:dev', 'watch']);
 
 };
