@@ -26,7 +26,6 @@ var OculusComponent2D = (function () {
     oculusComponent.prototype = new BaseComponent2D();
 
     oculusComponent.prototype.initialize = function () {
-
         var item = {
             title: _("Oculus"),
             icon: this.localPath + "images/oculus.png",
@@ -126,9 +125,9 @@ var OculusComponent2D = (function () {
     };
 
     oculusComponent.prototype.onPlanReady = function () {
-        this.path = this.structure.params.pathOculus || [];
-        this.computeMiddlePath();
-        api2D.requestRefresh();
+        // this.path = this.structure.params.pathOculus || [];
+        // this.computeMiddlePath();
+        // api2D.requestRefresh();
     };
 
     oculusComponent.prototype.onOculusDragStart = function () {

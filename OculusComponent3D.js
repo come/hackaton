@@ -26,7 +26,7 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype = new BaseComponent3D();
 
     oculusComponent.prototype.initialize = function () {
-       var item = {
+         var item = {
          title : _("Oculus 3D"),
          icon : this.localPath + "images/oculus.png",
          action : "my.request.oculus3D",
