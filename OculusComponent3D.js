@@ -39,26 +39,39 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype.startListening = function () {
         this.onOculus3D = this.onOculus3D.bind(this);
         document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
-        //document.addEventListener("keydown", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
         document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
     }
 
-/*    oculusComponent.prototype.moveForward = function () {
-              if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
-                that.keysDown.indexOf(evt.keyCode) !== -1 ||
-                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                that.keysRight.indexOf(evt.keyCode) !== -1) {
-                var index = that._keys.indexOf(evt.keyCode);
-
-                if (index === -1) {
-                  that._keys.push(evt.keyCode);
-                }
+    oculusComponent.prototype.moveForward = function (evt) {
+              var normal = new BABYLON.Vector3(-newCameras.leftCamera._actualDirection.z, 0, newCameras.leftCamera._actualDirection.x)
+              var direction = newCameras.leftCamera._actualDirection;
+              direction.y=0
+              normal.scaleInPlace(10);
+              direction.scaleInPlace(10);
+              if (evt.keyCode == 38){
+                var currentCamera = API.getCamera();
+                newCameras.leftCamera.position.addInPlace(direction);
+                newCameras.rightCamera.position.addInPlace(direction);
               }
-              console.log("test");
-    });*/
+              else if (evt.keyCode == 39){
+                var currentCamera = API.getCamera();
+                newCameras.leftCamera.position.subtractInPlace(normal);
+                newCameras.rightCamera.position.subtractInPlace(normal);
+              }
+              else if (evt.keyCode == 37){
+                var currentCamera = API.getCamera();
+                newCameras.leftCamera.position.addInPlace(normal);
+                newCameras.rightCamera.position.addInPlace(normal);
+              }
+              else if (evt.keyCode == 40){
+                var currentCamera = API.getCamera();
+                newCameras.leftCamera.position.subtractInPlace(direction);
+                newCameras.rightCamera.position.subtractInPlace(direction);
+              }
+    }
 
     oculusComponent.prototype.onOculus3D = function () {
         var body = document.body;
@@ -72,9 +85,10 @@ var OculusComponent3D = (function () {
         document.getElementById("container3d").children[0].style.width = window.innerWidth+"px";
 
         wanaplan.setSize(window.innerWidth, window.innerHeight);
-        var originScene = API.getScene();
-        var originCamera = originScene.activeCamera;
-        newCameras = BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(originScene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
+        var currentScene = API.getScene();
+        var currentCamera = currentScene.activeCamera;
+        newCameras = BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(currentScene, "Oculus", currentCamera.minZ, currentCamera.maxZ, currentCamera.position, { yaw: 3, pitch: 0, roll: 0 }, false, true, true);
+        document.addEventListener("keydown", this.moveForward, false);
         this.camera = API.getCamera();
 
         this.moveBaby(wanaplan.structure.params.pathOculus);
@@ -103,6 +117,22 @@ var OculusComponent3D = (function () {
         });
         this.launchAnimation();
     }
+
+      oculusComponent.prototype.moveBaby2 = function(positions, index) {
+        var index = index !== undefined ? index : 0;
+        if (index >= (positions.length - 1)) return;
+
+        var begin = positions[index].clone();
+        var end = positions[index+1].clone();
+        begin.z = -begin.z;
+        end.z = -end.z;
+
+        this.moveTo({
+            begin: begin,
+            end: end,
+            callback : oculusComponent.prototype.moveBaby.bind(this, positions, index+1)
+        });
+    };
 
     oculusComponent.prototype.moveBaby = function(positions, index) {
         var index = index !== undefined ? index : 0;
