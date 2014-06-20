@@ -103,13 +103,14 @@ var OculusComponent3D = (function () {
         anims = [];
         var begin = params.begin;
         var end = params.end;
-        var speed = 100;
+        var speed = 300;
         var duration = begin.distanceTo(end) / speed * 1000;
 
         var beginRotation = newCameras.leftCamera._currentOrientation;
         var pyr = {
             pitch : 0,
-            yaw :  newCameras.leftCamera.controllers[0].controllers[0]._relativeOrientation.yaw + (3 * Math.PI / 2 - Math.atan2(begin.z - end.z, begin.x - end.x)) % (2 * Math.PI),
+            yaw :  newCameras.leftCamera.controllers[0].controllers[0]._relativeOrientation.yaw +
+             (3 * Math.PI / 2 - Math.atan2(begin.z - end.z, begin.x - end.x)) % (2 * Math.PI),
             roll : 0
         };
         if(pyr.yaw > Math.PI) {
@@ -126,13 +127,15 @@ var OculusComponent3D = (function () {
             roll : pyr.roll
         };
 
-        this.computeAnimation(newCameras.leftCamera, { position : begin, _currentOrientation : beginRotation  } , { position : end, _currentOrientation : endRotation }, {
+        this.computeAnimation(newCameras.leftCamera, { position : begin, _currentOrientation : beginRotation  } 
+            , { position : end, _currentOrientation : endRotation }, {
             smooth: "linear",
             duration : duration,
             isACamera: true,
             callback : params.callback
         });
-        this.computeAnimation(newCameras.rightCamera, { position : begin, _currentOrientation : beginRotation  } , { position : end, _currentOrientation : endRotation }, {
+        this.computeAnimation(newCameras.rightCamera, { position : begin, _currentOrientation : beginRotation  } 
+            , { position : end, _currentOrientation : endRotation }, {
             smooth: "linear",
             duration : duration,
             isACamera: true,
@@ -272,14 +275,15 @@ var OculusComponent3D = (function () {
             if (src[property] instanceof BABYLON.Vector3) {
                 anims.push(new Animation(target[property], src[property], dst[property], duration, "x"));
                 anims.push(new Animation(target[property], src[property], dst[property], duration, "y"));
-                anims.push(new Animation(target[property], src[property], dst[property], duration, "z"));
+                anims.push(new Animation(target[property], src[property], dst[property], duration, "z", target == newCameras.rightCamera ? callback : null));
                 // launchAnimation(target[property], src[property], dst[property], duration, "x");
                 // launchAnimation(target[property], src[property], dst[property], duration, "y");
                 // launchAnimation(target[property], src[property], dst[property], duration, "z", callback);
             } else if (src[property].yaw) {
-                anims.push(new Animation(target[property], src[property], dst[property], duration, "yaw"));
-                anims.push(new Animation(target[property], src[property], dst[property], duration, "pitch"));
-                anims.push(new Animation(target[property], src[property], dst[property], duration, "roll", target == newCameras.rightCamera ? callback : null));
+                target[property] = dst[property];
+                // anims.push(new Animation(target[property], src[property], dst[property], duration, "yaw"));
+                // anims.push(new Animation(target[property], src[property], dst[property], duration, "pitch"));
+                // anims.push(new Animation(target[property], src[property], dst[property], duration, "roll", target == newCameras.rightCamera ? callback : null));
             }
             else {
                 this.launchAnimation(target, src[property], dst[property], duration, property, callback);
