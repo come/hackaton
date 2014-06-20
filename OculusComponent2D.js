@@ -178,6 +178,23 @@ var OculusComponent2D = (function () {
             }
         }
 
+        //find overtures
+
+/*        var overtures = this.structure.members[0].overtures;
+        if (overtures) {
+            console.log('find', overtures);
+            for (var i = 0; i < overtures.length; i++) {
+                console.log(overtures[i])
+                var position = overtures[i].position;
+                var overture = new BABYLON.Vector3(position.x, 175, position.y);
+                console.log(overture.distanceTo(vector));
+                if (BABYLON.Vector3.Distance(overture, vector) < 100) {
+                    console.log('door')
+                    break;
+                }
+            }
+        }*/
+
         this.planPos = mstate.planPos;
         api2D.requestRefresh();
     };
