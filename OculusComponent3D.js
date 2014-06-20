@@ -26,24 +26,17 @@ var OculusComponent3D = (function () {
     oculusComponent.prototype = new BaseComponent3D();
 
     oculusComponent.prototype.initialize = function () {
-       var item = {
-         title : _("Oculus 3D"),
-         icon : this.localPath + "images/oculus.png",
-         action : "my.request.oculus3D",
-         index: 1001
-       }
-
-       API.Menu.add(API.Menu.MENU_TOP_2, item);
+      
     }
 
     oculusComponent.prototype.startListening = function () {
         this.onOculus3D = this.onOculus3D.bind(this);
-        document.addEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.addEventListener("my.request.oculus", this.onOculus3D, false);
         //document.addEventListener("keydown", this.onOculus3D, false);
     }
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("my.request.oculus3D", this.onOculus3D, false);
+        document.removeEventListener("my.request.oculus", this.onOculus3D, false);
     }
 
 /*    oculusComponent.prototype.moveForward = function () {

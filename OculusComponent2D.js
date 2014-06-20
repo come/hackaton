@@ -31,7 +31,7 @@ var OculusComponent2D = (function () {
         var item = {
             title: _("Oculus"),
             icon: this.localPath + "images/oculus.png",
-            action: "oculusComponent2D.click",
+            action: "my.request.oculus",
             index: 1000
         };
 
@@ -44,13 +44,13 @@ var OculusComponent2D = (function () {
 
     oculusComponent.prototype.startListening = function () {
         this.onOculusClick = this.onOculusClick.bind(this);
-        document.addEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.addEventListener("my.request.oculus", this.onOculusClick, false);
         api2D.registerEventCb("oculusComponent2D.dynamicRefresh", this.priority, "refresh", null, null, this.onOculusRefresh.bind(this), {});
         api2D.registerEventCb("oculusComponent2D.hover", this.priority, "hover", api2D.MODE_NORMAL, null, this.onOculusHover.bind(this), {});
     };
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.removeEventListener("my.request.oculus", this.onOculusClick, false);
     };
 
     oculusComponent.prototype.onOculusHover = function (event, target, mstate, params) {
