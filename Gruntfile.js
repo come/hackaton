@@ -24,8 +24,14 @@ module.exports = function (grunt) {
             ]
         },
         watch: {
-            options: {
-                livereload: LIVERELOAD_PORT
+            scripts: {
+                files: [
+                    '*.js',
+                    '!Gruntfile.js'
+                ],
+                options: {
+                    livereload: LIVERELOAD_PORT
+                }
             }
         },
         connect: {
