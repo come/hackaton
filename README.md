@@ -5,6 +5,8 @@
 
 ## DEV
     
- - just run grunt 
+ - for dev just run 'grunt server' in terminal
+ - for code validation run just 'grunt'
+ - for unit testing, run 'karma start'
   
     
