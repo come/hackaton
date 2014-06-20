@@ -18,6 +18,7 @@ var OculusComponent2D = (function () {
         this.path = [];
         this.pathMiddle = [];
         this.planPos = {};
+        this.pathColor = "green";
         return this;
     };
 
@@ -29,9 +30,9 @@ var OculusComponent2D = (function () {
         var item = {
             title: _("Oculus"),
             icon: this.localPath + "images/oculus.png",
-            action: "oculusComponent2D.click",
+            action: "my.request.oculus",
             index: 1000
-        }
+        };
 
         API.Menu.add(API.Menu.MENU_TOP_2, item);
 
@@ -42,13 +43,13 @@ var OculusComponent2D = (function () {
 
     oculusComponent.prototype.startListening = function () {
         this.onOculusClick = this.onOculusClick.bind(this);
-        document.addEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.addEventListener("my.request.oculus", this.onOculusClick, false);
         api2D.registerEventCb("oculusComponent2D.dynamicRefresh", this.priority, "refresh", null, null, this.onOculusRefresh.bind(this), {});
         api2D.registerEventCb("oculusComponent2D.hover", this.priority, "hover", api2D.MODE_NORMAL, null, this.onOculusHover.bind(this), {});
     };
 
     oculusComponent.prototype.stopListening = function () {
-        document.removeEventListener("oculusComponent2D.click", this.onOculusClick, false);
+        document.removeEventListener("my.request.oculus", this.onOculusClick, false);
     };
 
     oculusComponent.prototype.onOculusHover = function (event, target, mstate, params) {
@@ -64,14 +65,24 @@ var OculusComponent2D = (function () {
     oculusComponent.prototype.onOculusHoverPoint = function (ctx, translation, zoom, data) {
 
         if (data) {
+            this.pathColor = "grey";
             ctx.save();
             ctx.translate(translation.x, translation.y);
             ctx.scale(zoom, zoom);
+
             ctx.beginPath();
-            ctx.lineWidth = "2";
-            ctx.strokeStyle = "gray";
+            ctx.lineWidth = "10";
+            ctx.strokeStyle = "green";
+            ctx.fillStyle = "white";
             ctx.arc(data.x, data.z, 25 * zoom, 0, Math.PI * 2);
             ctx.stroke();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(data.x, data.z, 10 * zoom, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fill();
+
             ctx.restore();
         }
 
@@ -84,6 +95,7 @@ var OculusComponent2D = (function () {
     };
 
     oculusComponent.prototype.onOculusEditDragEnd = function (event, target, mstate, params) {
+        this.pathColor = "green";
         api2D.requestRefresh();
     };
 
@@ -147,17 +159,55 @@ var OculusComponent2D = (function () {
             this.pathMiddle = [];
             var vector = new BABYLON.Vector3(this.path[0].x, this.path[0].y, this.path[0].z);
 
+            this.path[0] = vector;
+
             for (var i = 1; i < this.path.length; i++) {
                 this.pathMiddle.push(BABYLON.Vector3.Lerp(this.path[i], vector, 0.5));
                 vector = new BABYLON.Vector3(this.path[i].x, this.path[i].y, this.path[i].z);
+                //force vector3
+                this.path[i] = vector;
             }
         }
+    };
+
+    oculusComponent.prototype.containsVector = function (vectorArray, vector) {
+        for (var i = 0; i < vectorArray.length; i++) {
+            if (vectorArray[i].equals(vector)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    oculusComponent.prototype.findAndAddDoorInPath = function (vector) {
+        var overtures = this.structure.members[0].overtures;
+
+        var doors = [];
+
+        if (overtures) {
+            for (var i = 0; i < overtures.length; i++) {
+                var position = overtures[i].getAbsolutePos().position;
+                var overture = new BABYLON.Vector3(position.x, 175, position.y);
+                var distance = BABYLON.Vector3.Distance(overture, vector);
+                if (distance < 100) {
+                    var door = { x: overture.x, y: overture.z, distance: distance};
+                    if (doors[0] && doors[0].distance > distance) {
+                        doors.unshift(door)
+                    } else {
+                        doors.push(door);
+                    }
+                }
+            }
+        }
+
+        return doors[0];
     };
 
     oculusComponent.prototype.onOculusDragging = function (event, target, mstate, params) {
 
         var vector = new BABYLON.Vector3(mstate.planPos.x, 175, mstate.planPos.y);
 
+        //find overtures
         if (this.path.length === 0 || (this.path.length > 0 && BABYLON.Vector3.Distance(this.path[this.path.length - 1], vector) >= 50)) {
             this.path.push(vector);
             if (this.path && this.path.length >= 2) {
@@ -165,7 +215,9 @@ var OculusComponent2D = (function () {
             }
         }
 
-        this.planPos = mstate.planPos;
+        var foundDoor = this.findAndAddDoorInPath(vector);
+        this.planPos = foundDoor || mstate.planPos;
+
         api2D.requestRefresh();
     };
 
@@ -176,7 +228,7 @@ var OculusComponent2D = (function () {
             ctx.translate(translation.x, translation.y);
             ctx.scale(zoom, zoom);
 
-            ctx.strokeStyle = "green";
+            ctx.strokeStyle = this.pathColor;
             ctx.lineWidth = "20";
             ctx.beginPath();
 
