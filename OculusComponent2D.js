@@ -207,8 +207,7 @@ var OculusComponent2D = (function () {
 
         var vector = new BABYLON.Vector3(mstate.planPos.x, 175, mstate.planPos.y);
 
-        //find overtures
-        if (this.path.length === 0 || (this.path.length > 0 && BABYLON.Vector3.Distance(this.path[this.path.length - 1], vector) >= 50)) {
+        if (this.path.length === 0 || (this.path.length > 0 && BABYLON.Vector3.Distance(this.path[this.path.length - 1], vector) >= 100)) {
             this.path.push(vector);
             if (this.path && this.path.length >= 2) {
                 this.pathMiddle.push(BABYLON.Vector3.Lerp(this.path[this.path.length - 2], vector, 0.5));
