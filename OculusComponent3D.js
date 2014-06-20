@@ -99,6 +99,8 @@ var OculusComponent3D = (function () {
         this.moveBaby(params);
     }
 
+    var lastYaw, curYaw;
+
     oculusComponent.prototype.moveTo = function(params) {
         anims = [];
         var begin = params.begin;
@@ -106,7 +108,6 @@ var OculusComponent3D = (function () {
         var speed = 300;
         var duration = begin.distanceTo(end) / speed * 1000;
 
-        var beginRotation = newCameras.leftCamera._currentOrientation;
         var pyr = {
             pitch : 0,
             yaw :  newCameras.leftCamera.controllers[0].controllers[0]._relativeOrientation.yaw +
@@ -119,8 +120,10 @@ var OculusComponent3D = (function () {
         if(pyr.yaw < -Math.PI) {
             pyr.yaw = pyr.yaw + 2 * Math.PI;
         }
-        console.log(pyr.yaw);
+        lastYaw = curYaw || pyr.yaw;
+        curYaw = pyr.yaw;
 
+        var beginRotation = {pitch: 0, roll: 0, yaw : lastYaw};
         var endRotation = { 
             yaw : pyr.yaw,
             pitch : pyr.pitch,
@@ -249,6 +252,9 @@ var OculusComponent3D = (function () {
                         newCameras.leftCamera.resetViewMatrix();
                         newCameras.rightCamera.resetViewMatrix();
                     }
+                    if (anims[i].property == 'yaw') {
+                        anims[i].target.rotateRelative({pitch : 0, roll : 0, yaw : frameDuration  / anims[i].duration*(anims[i].dst[anims[i].property] - anims[i].src[anims[i].property])});
+                    }
                 } 
                 else {
                     anims[i].target[anims[i].property] = anims[i].dst[anims[i].property];
@@ -280,8 +286,9 @@ var OculusComponent3D = (function () {
                 // launchAnimation(target[property], src[property], dst[property], duration, "y");
                 // launchAnimation(target[property], src[property], dst[property], duration, "z", callback);
             } else if (src[property].yaw) {
-                target[property] = dst[property];
-                // anims.push(new Animation(target[property], src[property], dst[property], duration, "yaw"));
+                // target.rotateRelative({pitch :0, roll : 0, yaw : (dst[property].yaw - src[property].yaw)});
+                // target[property].yaw += dst[property].yaw - src[property].yaw;
+                anims.push(new Animation(target, src[property], dst[property], duration, "yaw"));
                 // anims.push(new Animation(target[property], src[property], dst[property], duration, "pitch"));
                 // anims.push(new Animation(target[property], src[property], dst[property], duration, "roll", target == newCameras.rightCamera ? callback : null));
             }
