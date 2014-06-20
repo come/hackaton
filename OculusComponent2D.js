@@ -40,6 +40,7 @@ var OculusComponent2D = (function () {
         document.addEventListener("wnp.core.structure.loaded", this.onPlanReady.bind(this), false);
         this.onPlanReady();
         this.startListening();
+        console.log('init 2D');
     };
 
     oculusComponent.prototype.startListening = function () {
@@ -140,6 +141,7 @@ var OculusComponent2D = (function () {
     oculusComponent.prototype.onPlanReady = function () {
         this.path = this.structure.params.pathOculus || [];
         this.computeMiddlePath();
+        console.log('plan ready', this.path);
         api2D.requestRefresh();
     };
 
@@ -160,9 +162,13 @@ var OculusComponent2D = (function () {
             this.pathMiddle = [];
             var vector = new BABYLON.Vector3(this.path[0].x, this.path[0].y, this.path[0].z);
 
+            this.path[0] = vector;
+
             for (var i = 1; i < this.path.length; i++) {
                 this.pathMiddle.push(BABYLON.Vector3.Lerp(this.path[i], vector, 0.5));
                 vector = new BABYLON.Vector3(this.path[i].x, this.path[i].y, this.path[i].z);
+                //force vector3
+                this.path[i] = vector;
             }
         }
     };
@@ -180,20 +186,20 @@ var OculusComponent2D = (function () {
 
         //find overtures
 
-/*        var overtures = this.structure.members[0].overtures;
-        if (overtures) {
-            console.log('find', overtures);
-            for (var i = 0; i < overtures.length; i++) {
-                console.log(overtures[i])
-                var position = overtures[i].position;
-                var overture = new BABYLON.Vector3(position.x, 175, position.y);
-                console.log(overture.distanceTo(vector));
-                if (BABYLON.Vector3.Distance(overture, vector) < 100) {
-                    console.log('door')
-                    break;
-                }
-            }
-        }*/
+        /*        var overtures = this.structure.members[0].overtures;
+         if (overtures) {
+         console.log('find', overtures);
+         for (var i = 0; i < overtures.length; i++) {
+         console.log(overtures[i])
+         var position = overtures[i].position;
+         var overture = new BABYLON.Vector3(position.x, 175, position.y);
+         console.log(overture.distanceTo(vector));
+         if (BABYLON.Vector3.Distance(overture, vector) < 100) {
+         console.log('door')
+         break;
+         }
+         }
+         }*/
 
         this.planPos = mstate.planPos;
         api2D.requestRefresh();
