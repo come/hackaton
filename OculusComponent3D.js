@@ -109,7 +109,7 @@ var OculusComponent3D = (function () {
         var beginRotation = newCameras.leftCamera._currentOrientation;
         var pyr = {
             pitch : 0,
-            yaw :  (3 * Math.PI / 2 - Math.atan2(begin.z - end.z, begin.x - end.x)) % (2 * Math.PI),
+            yaw :  newCameras.leftCamera.controllers[0].controllers[0]._relativeOrientation.yaw + (3 * Math.PI / 2 - Math.atan2(begin.z - end.z, begin.x - end.x)) % (2 * Math.PI),
             roll : 0
         };
         if(pyr.yaw > Math.PI) {
@@ -159,7 +159,7 @@ var OculusComponent3D = (function () {
 
     oculusComponent.prototype.moveBaby = function(positions, index) {
         var index = index !== undefined ? index : 0;
-        if (index >= (wanaplan.structure.params.pathOculus.length - 1)) return;
+        if (index >= (wanaplan.structure.params.pathOculus.length - 2)) return;
 
         var begin = positions[index].clone();
         var end = positions[index+1].clone();
